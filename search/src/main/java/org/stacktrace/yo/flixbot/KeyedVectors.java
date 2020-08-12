@@ -1,35 +1,66 @@
 package org.stacktrace.yo.flixbot;
 
 
+import com.google.common.collect.ImmutableMap;
+
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
-import static org.stacktrace.yo.flixbot.KeyedVectorBinaryReader.readBinary;
+import static org.stacktrace.yo.flixbot.KeyedVectorIO.readBinary;
 
 public class KeyedVectors {
 
 
-    public static KeyedVectors getKeyedVectors(String dir) throws Exception {
+    public static KeyedVectors normalizedVectors(String dir) throws Exception {
         return l2Norm(readBinary(dir));
     }
 
-    public static KeyedVectors getKeyedVectors(File dir) throws Exception {
+    public static KeyedVectors normalizedVectors(File dir) throws Exception {
         return l2Norm(readBinary(dir));
     }
 
-    private final ByteBuffer[] keys;
+    public static KeyedVectors vectors(String dir) throws Exception {
+        return KeyedVectorIO.readVector(dir);
+    }
+
+    public static KeyedVectors vectors(File dir) throws Exception {
+        return KeyedVectorIO.readVector(dir);
+    }
+
+
+    private final String[] keys;
     private final double[][] vectors;
     private final int layerSize;
 
-    private KeyedVectors(ByteBuffer[] keys, double[][] vectors, int layerSize) {
+    KeyedVectors(String[] keys, double[][] vectors, int layerSize) {
         this.layerSize = layerSize;
         this.keys = keys;
         this.vectors = vectors;
     }
 
-    public ByteBuffer[] keys() {
+    KeyedVectors(ByteBuffer[] keys, double[][] vectors, int layerSize) {
+        this.layerSize = layerSize;
+        this.keys = new String[keys.length];
+        Charset charset = StandardCharsets.UTF_8;
+        for (int i = 0; i < keys.length; i++) {
+            this.keys[i] = charset.decode(keys[i]).toString();
+        }
+        this.vectors = vectors;
+    }
+
+    public String[] keys() {
         return keys;
+    }
+
+    public ImmutableMap<String, Integer> keyOffsets() {
+        final ImmutableMap.Builder<String, Integer> result = ImmutableMap.builder();
+        for (int i = 0; i < keys.length; i++) {
+            result.put(keys[i], i);
+        }
+        return result.build();
     }
 
     public double[][] vectors() {
@@ -76,5 +107,6 @@ public class KeyedVectors {
         buffers.release();
         return new KeyedVectors(keys, vectors, buffers.layerSize());
     }
+
 
 }

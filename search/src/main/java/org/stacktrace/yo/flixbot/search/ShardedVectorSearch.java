@@ -7,8 +7,6 @@ import org.apache.commons.math3.stat.descriptive.moment.VectorialMean;
 import org.stacktrace.yo.flixbot.KeyedVectors;
 import org.stacktrace.yo.flixbot.commons.Futures;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,27 +23,29 @@ public class ShardedVectorSearch implements KeyedVectorSearch {
     private final int layerSize;
     private final VectorSearchShard[] searchShards;
     private final HashFunction hashFunction = Hashing.murmur3_32(5390);
-    private final Executor searchExecuter;
+    private final Executor searchExecutor;
 
-    public ShardedVectorSearch(final KeyedVectors keyedVectors, final int shards) {
+    public ShardedVectorSearch(final KeyedVectors keyedVectors, final int shards, Executor searchExecutor) {
         this.layerSize = keyedVectors.layerSize();
         this.searchShards = new VectorSearchShard[shards];
-        this.searchExecuter = Executors.newFixedThreadPool(shards);
+        this.searchExecutor = searchExecutor;
 
         double[][] vectors = keyedVectors.vectors();
-        ByteBuffer[] keys = keyedVectors.keys();
+        String[] keys = keyedVectors.keys();
 
         io.vavr.collection.List<VectorSearchShard.VectorSearchShardData> searchShardData = io.vavr.collection.List.range(0, shards)
                 .map(s -> new VectorSearchShard.VectorSearchShardData(layerSize))
                 .toList();
-
-        Charset charset = StandardCharsets.UTF_8;
         for (int i = 0; i < keys.length; i++) {
-            String key = charset.decode(keys[i]).toString();
+            String key = keys[i];
             int shard = getShard(key);
             searchShardData.get(shard).addVector(key, vectors[i]);
         }
         searchShardData.forEachWithIndex((vectorSearchShardData, value) -> searchShards[value] = vectorSearchShardData.asShard());
+    }
+
+    public ShardedVectorSearch(final KeyedVectors keyedVectors, final int shards) {
+        this(keyedVectors, shards, Executors.newFixedThreadPool(shards));
     }
 
     public Boolean contains(String word) {
@@ -104,7 +104,7 @@ public class ShardedVectorSearch implements KeyedVectorSearch {
         return ANSWER_ORDERING.greatestOf(
                 Futures.ofAll(
                         Arrays.stream(searchShards)
-                                .map(shard -> CompletableFuture.supplyAsync(() -> shard.search(vec, maxNumMatches), searchExecuter))
+                                .map(shard -> CompletableFuture.supplyAsync(() -> shard.search(vec, maxNumMatches), searchExecutor))
                                 .collect(Collectors.toList())
                 ).join()
                         .stream()
@@ -132,5 +132,8 @@ public class ShardedVectorSearch implements KeyedVectorSearch {
         return mostSimilar(mean, top);
     }
 
-
+    @Override
+    public int layerSize() {
+        return this.layerSize;
+    }
 }

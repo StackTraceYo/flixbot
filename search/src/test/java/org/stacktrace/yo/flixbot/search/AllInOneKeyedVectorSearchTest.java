@@ -9,12 +9,12 @@ import org.stacktrace.yo.flixbot.KeyedVectors;
 
 import java.util.Arrays;
 
-class WordVectorSearchTest {
+class AllInOneKeyedVectorSearchTest {
 
-    private final KeyedVectors keyedVectors = KeyedVectors.getKeyedVectors(getClass().getResource("/test_word_embeddings").getPath());
-    private final WordVectorSearch wordVectorSearch = new WordVectorSearch(keyedVectors);
+    private final KeyedVectors keyedVectors = KeyedVectors.normalizedVectors(getClass().getResource("/test_word_embeddings").getPath());
+    private final AllInOneVectorSearch wordVectorSearch = new AllInOneVectorSearch(keyedVectors);
 
-    WordVectorSearchTest() throws Exception {
+    AllInOneKeyedVectorSearchTest() throws Exception {
     }
 
     @Test

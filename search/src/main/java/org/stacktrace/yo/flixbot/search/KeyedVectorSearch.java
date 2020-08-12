@@ -7,7 +7,6 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.stat.descriptive.moment.VectorialMean;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 public interface KeyedVectorSearch {
 
@@ -65,18 +64,19 @@ public interface KeyedVectorSearch {
 
     List<Answer> search(final double[] vec, int maxNumMatches);
 
+    int layerSize();
 
-    Ordering<WordVectorSearch.Answer> ANSWER_ORDERING = Ordering.natural().onResultOf((Function<Answer, Double>) answer -> answer != null ? answer.score : 0);
+    Ordering<AllInOneVectorSearch.Answer> ANSWER_ORDERING = Ordering.natural().onResultOf((Function<Answer, Double>) answer -> answer != null ? answer.score : 0);
 
     default double cosineDistance(double[] otherVec, double[] vec) {
-        RealVector oV = new ArrayRealVector(otherVec);
-        RealVector v = new ArrayRealVector(vec);
+        RealVector oV = new ArrayRealVector(otherVec, false);
+        RealVector v = new ArrayRealVector(vec, false);
         return oV.cosine(v);
     }
 
     default double[] applyWeight(double[] vec, double scalar) {
-        RealVector v = new ArrayRealVector(vec);
-        return v.mapMultiply(scalar).toArray();
+        RealVector v = new ArrayRealVector(vec, false);
+        return v.mapMultiplyToSelf(scalar).toArray();
     }
 
     default double[] mean(List<String> keys, int layerSize) {

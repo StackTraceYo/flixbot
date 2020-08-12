@@ -12,7 +12,7 @@ class VectorBinaryReaderTest {
 
     @Test
     public void testBinaryReader() throws Exception {
-        KeyedVectorsBuffers kv = KeyedVectorBinaryReader.readBinary("/Users/ahmad/Desktop/f_m2v_50_300_10_w2v_format");
+        KeyedVectorsBuffers kv = KeyedVectorIO.readBinary("/Users/ahmad/Desktop/f_m2v_50_300_10_w2v_format");
 //        KeyedVectorsBuffers kv = KeyedVectorBinaryReader.readBinary(getClass().getResource("/test_word_embeddings").getPath());
 
         Assertions.assertEquals(15662, kv.keys().length);

@@ -3,18 +3,37 @@ package org.stacktrace.yo.flixbot.search;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.List;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stacktrace.yo.flixbot.KeyedVectors;
 
 import java.util.Arrays;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 class ShardedWordVectorSearchTest {
 
-    private final KeyedVectors keyedVectors = KeyedVectors.getKeyedVectors(getClass().getResource("/test_word_embeddings").getPath());
-    private final ShardedVectorSearch wordVectorSearch = new ShardedVectorSearch(keyedVectors,4);
+    private final KeyedVectors keyedVectors = KeyedVectors.normalizedVectors(getClass().getResource("/test_word_embeddings").getPath());
+    private static final ExecutorService executor = Executors.newFixedThreadPool(2);
+    private final ShardedVectorSearch wordVectorSearch = new ShardedVectorSearch(keyedVectors,4, executor);
 
     ShardedWordVectorSearchTest() throws Exception {
+    }
+
+    @AfterAll
+    public static void clean(){
+        executor.shutdown();
+    }
+
+    @Test
+    public void can_get_top_answers2() throws Exception {
+        ShardedVectorSearch search = new ShardedVectorSearch(KeyedVectors.vectors("/Users/ahmad/projects/flixbot/search/docs"), 4);
+        for (KeyedVectorSearch.Answer s : search.mostSimilar("*dt_tt1950186", 10)
+                .answers) {
+            System.out.println(s.name + " - " + s.score);
+        }
     }
 
     @Test

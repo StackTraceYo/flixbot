@@ -24,3 +24,5 @@ bot/target
 hs_err_pid*
 .idea
 *.iml
+search/docs
+search/words

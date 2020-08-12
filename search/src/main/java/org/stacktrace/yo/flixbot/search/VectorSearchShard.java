@@ -6,7 +6,6 @@ import org.apache.commons.math3.stat.descriptive.moment.VectorialMean;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class VectorSearchShard implements KeyedVectorSearch {
@@ -42,25 +41,25 @@ public class VectorSearchShard implements KeyedVectorSearch {
 
     }
 
-    private final double[][] vectors;
-    private final String[] keys;
-    private final int layerSize;
-    private final ImmutableMap<String, Integer> w2vectorOffset;
+    protected final double[][] vectors;
+    protected final String[] keys;
+    protected final int layerSize;
+    protected final ImmutableMap<String, Integer> vectorOffset;
 
     public VectorSearchShard(double[][] vectors, ImmutableMap<String, Integer> offsets, int layerSize) {
         this.vectors = vectors;
         this.layerSize = layerSize;
-        this.w2vectorOffset = offsets;
+        this.vectorOffset = offsets;
         this.keys = offsets.keySet().toArray(new String[0]);
     }
 
     public Boolean contains(String word) {
-        return w2vectorOffset.containsKey(word);
+        return vectorOffset.containsKey(word);
     }
 
     @Override
     public double[] keyVector(String key) {
-        final Integer index = w2vectorOffset.get(key);
+        final Integer index = vectorOffset.get(key);
         if (index == null) {
             return null;
         }
@@ -74,7 +73,7 @@ public class VectorSearchShard implements KeyedVectorSearch {
         int count = 0;
 
         for (String key : keys) {
-            final Integer index = w2vectorOffset.get(key);
+            final Integer index = vectorOffset.get(key);
             if (index != null) {
                 double[] result = vectors[index];
                 mean.increment(result);
@@ -130,5 +129,8 @@ public class VectorSearchShard implements KeyedVectorSearch {
         return mostSimilar(mean, top);
     }
 
-
+    @Override
+    public int layerSize() {
+        return this.layerSize;
+    }
 }
