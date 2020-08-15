@@ -1,4 +1,4 @@
-package org.stacktrace.yo.flixbot;
+package org.stacktrace.yo.flixbot.vector.io;
 
 
 import sun.nio.ch.DirectBuffer;

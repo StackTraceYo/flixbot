@@ -1,25 +1,45 @@
-package org.stacktrace.yo.flixbot.search;
+package org.stacktrace.yo.flixbot.vector.search;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.List;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.stacktrace.yo.flixbot.KeyedVectors;
+import org.stacktrace.yo.flixbot.vector.io.KeyedVectorData;
+import org.stacktrace.yo.flixbot.vector.keyed.KeyedVectors;
+import org.stacktrace.yo.flixbot.vector.keyed.ShardedKeyVectors;
 
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-class AllInOneKeyedVectorSearchTest {
+class ShardedWordVectorSearchTest {
 
-    private final KeyedVectors keyedVectors = KeyedVectors.normalizedVectors(getClass().getResource("/test_word_embeddings").getPath());
-    private final AllInOneVectorSearch wordVectorSearch = new AllInOneVectorSearch(keyedVectors);
+    private final KeyedVectorData keyedVectors = KeyedVectorData.normalizedVectors(getClass().getResource("/test_word_embeddings").getPath());
+    private static final ExecutorService executor = Executors.newFixedThreadPool(2);
+    private final ShardedKeyVectors wordVectorSearch = new ShardedKeyVectors(keyedVectors,4, executor);
 
-    AllInOneKeyedVectorSearchTest() throws Exception {
+    ShardedWordVectorSearchTest() throws Exception {
+    }
+
+    @AfterAll
+    public static void clean(){
+        executor.shutdown();
+    }
+
+    @Test
+    public void can_get_top_answers2() throws Exception {
+        ShardedKeyVectors search = new ShardedKeyVectors(KeyedVectorData.vectors("/Users/ahmad/projects/flixbot/search/words"), 8);
+        for (KeyedVectors.Answer s : search.mostSimilar("espionage", 10)
+                .answers) {
+            System.out.println(s.name + " - " + s.score);
+        }
     }
 
     @Test
     public void can_get_top_answers() throws Exception {
-        KeyedVectorSearch.SearchResult cheese = wordVectorSearch.mostSimilar("cheese", 10);
+        KeyedVectors.SearchResult cheese = wordVectorSearch.mostSimilar("cheese", 10);
         // drop first cause itll be they key
         List<Tuple2<String, Double>> actual = List.ofAll(cheese.answers).map(answer -> Tuple.of(answer.name, answer.score)).drop(1);
         List<Tuple2<String, Double>> expected = List.of(
@@ -44,7 +64,7 @@ class AllInOneKeyedVectorSearchTest {
 
     @Test
     public void can_get_top_answers_with_multiple_keys() throws Exception {
-        KeyedVectorSearch.SearchResult cheese = wordVectorSearch.mostSimilar(Arrays.asList("sweet", "dry"), 10);
+        KeyedVectors.SearchResult cheese = wordVectorSearch.mostSimilar(Arrays.asList("sweet", "dry"), 10);
         List<Tuple2<String, Double>> actual = List.ofAll(cheese.answers).map(answer -> Tuple.of(answer.name, answer.score));
 
         List<Tuple2<String, Double>> expected = List.of(

@@ -1,8 +1,10 @@
-package org.stacktrace.yo.flixbot;
+package org.stacktrace.yo.flixbot.vector.io;
 
 import io.vavr.collection.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.stacktrace.yo.flixbot.vector.io.KeyedVectorIO;
+import org.stacktrace.yo.flixbot.vector.io.KeyedVectorsBuffers;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;

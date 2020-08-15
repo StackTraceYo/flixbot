@@ -1,14 +1,16 @@
-package org.stacktrace.yo.flixbot.search;
+package org.stacktrace.yo.flixbot.vector.keyed;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.apache.commons.math3.stat.descriptive.moment.VectorialMean;
+import org.stacktrace.yo.flixbot.vector.search.TopKSearcher;
+import org.stacktrace.yo.flixbot.vector.search.VectorSearcher;
+import org.stacktrace.yo.flixbot.vector.scoring.CosineScorer;
+import org.stacktrace.yo.flixbot.vector.scoring.Scorer;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class VectorSearchShard implements KeyedVectorSearch {
+public class KeyedVectorShard extends KeyedVectors {
 
 
     public static class VectorSearchShardData {
@@ -30,8 +32,8 @@ public class VectorSearchShard implements KeyedVectorSearch {
             return this;
         }
 
-        public VectorSearchShard asShard() {
-            return new VectorSearchShard(
+        public KeyedVectorShard asShard() {
+            return new KeyedVectorShard(
                     shardVectors.toArray(new double[0][0]),
                     builder.build(),
                     layerSize
@@ -43,12 +45,12 @@ public class VectorSearchShard implements KeyedVectorSearch {
 
     protected final double[][] vectors;
     protected final String[] keys;
-    protected final int layerSize;
     protected final ImmutableMap<String, Integer> vectorOffset;
+    protected Scorer cosineScoring = new CosineScorer();
 
-    public VectorSearchShard(double[][] vectors, ImmutableMap<String, Integer> offsets, int layerSize) {
+    public KeyedVectorShard(double[][] vectors, ImmutableMap<String, Integer> offsets, int layerSize) {
+        super(layerSize);
         this.vectors = vectors;
-        this.layerSize = layerSize;
         this.vectorOffset = offsets;
         this.keys = offsets.keySet().toArray(new String[0]);
     }
@@ -86,51 +88,16 @@ public class VectorSearchShard implements KeyedVectorSearch {
         return mean.getResult();
     }
 
+
+
     @Override
-    public SearchResult mostSimilar(String key, int top) {
-        double[] vector = keyVector(key);
-        if (null != vector) {
-            return mostSimilar(vector, top + 1);
-        }
-        return new SearchResult(Lists.newArrayList());
+    public String[] keys() {
+        return keys;
     }
 
     @Override
-    public SearchResult mostSimilar(double[] vec, int top) {
-        return new SearchResult(search(vec, top));
+    public VectorSearcher searcher(int top) {
+        return new TopKSearcher(this, cosineScoring, top);
     }
 
-    public List<Answer> search(final double[] vec, int maxNumMatches) {
-        return ANSWER_ORDERING.greatestOf(
-                Arrays.stream(keys).map(other -> {
-                    double[] ov = keyVector(other);
-                    double d = cosineDistance(ov, vec);
-                    return new Answer(other, d);
-                }).collect(Collectors.toList()),
-                maxNumMatches
-        );
-    }
-
-    @Override
-    public SearchResult mostSimilar(List<String> keys, int top) {
-        double[] mean = mean(keys, layerSize);
-        return mostSimilar(mean, top + keys.size());
-    }
-
-    @Override
-    public SearchResult mostSimilar(List<String> pos, List<String> neg, int top) {
-        double[] mean = mean(pos, neg, layerSize);
-        return mostSimilar(mean, top);
-    }
-
-    @Override
-    public SearchResult mostSimilar(double[] pos, double[] neg, int top) {
-        double[] mean = mean(layerSize, pos, neg);
-        return mostSimilar(mean, top);
-    }
-
-    @Override
-    public int layerSize() {
-        return this.layerSize;
-    }
 }

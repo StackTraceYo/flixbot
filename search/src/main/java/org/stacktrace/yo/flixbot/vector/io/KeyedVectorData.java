@@ -1,4 +1,4 @@
-package org.stacktrace.yo.flixbot;
+package org.stacktrace.yo.flixbot.vector.io;
 
 
 import com.google.common.collect.ImmutableMap;
@@ -9,24 +9,24 @@ import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import static org.stacktrace.yo.flixbot.KeyedVectorIO.readBinary;
+import static org.stacktrace.yo.flixbot.vector.io.KeyedVectorIO.readBinary;
 
-public class KeyedVectors {
+public class KeyedVectorData {
 
 
-    public static KeyedVectors normalizedVectors(String dir) throws Exception {
+    public static KeyedVectorData normalizedVectors(String dir) throws Exception {
         return l2Norm(readBinary(dir));
     }
 
-    public static KeyedVectors normalizedVectors(File dir) throws Exception {
+    public static KeyedVectorData normalizedVectors(File dir) throws Exception {
         return l2Norm(readBinary(dir));
     }
 
-    public static KeyedVectors vectors(String dir) throws Exception {
+    public static KeyedVectorData vectors(String dir) throws Exception {
         return KeyedVectorIO.readVector(dir);
     }
 
-    public static KeyedVectors vectors(File dir) throws Exception {
+    public static KeyedVectorData vectors(File dir) throws Exception {
         return KeyedVectorIO.readVector(dir);
     }
 
@@ -35,13 +35,13 @@ public class KeyedVectors {
     private final double[][] vectors;
     private final int layerSize;
 
-    KeyedVectors(String[] keys, double[][] vectors, int layerSize) {
+    KeyedVectorData(String[] keys, double[][] vectors, int layerSize) {
         this.layerSize = layerSize;
         this.keys = keys;
         this.vectors = vectors;
     }
 
-    KeyedVectors(ByteBuffer[] keys, double[][] vectors, int layerSize) {
+    KeyedVectorData(ByteBuffer[] keys, double[][] vectors, int layerSize) {
         this.layerSize = layerSize;
         this.keys = new String[keys.length];
         Charset charset = StandardCharsets.UTF_8;
@@ -72,7 +72,7 @@ public class KeyedVectors {
     }
 
 
-    private static KeyedVectors l2Norm(KeyedVectorsBuffers buffers) {
+    private static KeyedVectorData l2Norm(KeyedVectorsBuffers buffers) {
         ByteBuffer[] original = buffers.vectors();
         ByteBuffer[] originalKeys = buffers.keys();
 
@@ -105,7 +105,7 @@ public class KeyedVectors {
             keys[i] = newKey;
         }
         buffers.release();
-        return new KeyedVectors(keys, vectors, buffers.layerSize());
+        return new KeyedVectorData(keys, vectors, buffers.layerSize());
     }
 
 

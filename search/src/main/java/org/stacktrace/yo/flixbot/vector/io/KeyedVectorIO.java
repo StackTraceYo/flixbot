@@ -1,4 +1,4 @@
-package org.stacktrace.yo.flixbot;
+package org.stacktrace.yo.flixbot.vector.io;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -82,11 +82,11 @@ public class KeyedVectorIO {
         return bytes;
     }
 
-    public static KeyedVectors readVector(String path) throws IOException {
+    public static KeyedVectorData readVector(String path) throws IOException {
         return readVector(new File(path));
     }
 
-    public static KeyedVectors readVector(File dir) throws IOException {
+    public static KeyedVectorData readVector(File dir) throws IOException {
         FileInputStream fs = new FileInputStream(dir);
         FileChannel channel = fs.getChannel();
         ByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
@@ -110,10 +110,10 @@ public class KeyedVectorIO {
             vectors[ln] = vector;
             buffer.position(buffer.position() + Double.BYTES * layerSize);
         }
-        return new KeyedVectors(keys, vectors, layerSize);
+        return new KeyedVectorData(keys, vectors, layerSize);
     }
 
-    public static void writeVectors(KeyedVectors kv, String path, Predicate<String> filter) throws IOException {
+    public static void writeVectors(KeyedVectorData kv, String path, Predicate<String> filter) throws IOException {
         String[] keys = kv.keys();
         double[][] vectors = kv.vectors();
         FileOutputStream fs = new FileOutputStream(new File(path));
