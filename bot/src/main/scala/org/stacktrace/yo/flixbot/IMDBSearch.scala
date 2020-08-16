@@ -1,4 +1,4 @@
-package org.stacktrace.yo.ombi
+package org.stacktrace.yo.flixbot
 
 import java.util.regex.Pattern
 
@@ -10,6 +10,15 @@ object IMDBSearch {
 
   def looksLike(query: String) = {
     IMDB_URL.matcher(query).find()
+  }
+
+  def extractIMDB(query: String) = {
+    val matcher = IMDB_URL.matcher(query)
+    if(matcher.find()){
+      matcher.group(1)
+    }else{
+      query
+    }
   }
 
   def apply(query: String): String = {

@@ -3,10 +3,6 @@ package org.stacktrace.yo.flixbot.vector.keyed;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.apache.commons.math3.stat.descriptive.moment.VectorialMean;
-import org.stacktrace.yo.flixbot.vector.search.TopKSearcher;
-import org.stacktrace.yo.flixbot.vector.search.VectorSearcher;
-import org.stacktrace.yo.flixbot.vector.scoring.CosineScorer;
-import org.stacktrace.yo.flixbot.vector.scoring.Scorer;
 
 import java.util.List;
 
@@ -46,7 +42,6 @@ public class KeyedVectorShard extends KeyedVectors {
     protected final double[][] vectors;
     protected final String[] keys;
     protected final ImmutableMap<String, Integer> vectorOffset;
-    protected Scorer cosineScoring = new CosineScorer();
 
     public KeyedVectorShard(double[][] vectors, ImmutableMap<String, Integer> offsets, int layerSize) {
         super(layerSize);
@@ -89,15 +84,10 @@ public class KeyedVectorShard extends KeyedVectors {
     }
 
 
-
     @Override
     public String[] keys() {
         return keys;
     }
 
-    @Override
-    public VectorSearcher searcher(int top) {
-        return new TopKSearcher(this, cosineScoring, top);
-    }
 
 }

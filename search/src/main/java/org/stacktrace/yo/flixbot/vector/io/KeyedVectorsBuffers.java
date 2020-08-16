@@ -6,7 +6,7 @@ import sun.nio.ch.DirectBuffer;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 
-class KeyedVectorsBuffers {
+public class KeyedVectorsBuffers {
 
     private ByteBuffer underlyingBuffer;
     private final ByteBuffer[] keys;

@@ -5,53 +5,57 @@ import io.vavr.collection.Iterator;
 import io.vavr.collection.Seq;
 import io.vavr.concurrent.Future;
 import org.stacktrace.yo.flixbot.commons.AnswerQueue;
+import org.stacktrace.yo.flixbot.search.Search;
+import org.stacktrace.yo.flixbot.search.Searcher;
 import org.stacktrace.yo.flixbot.vector.keyed.KeyedVectors;
 import org.stacktrace.yo.flixbot.vector.scoring.Scorer;
 
 import java.util.List;
 import java.util.concurrent.Executor;
 
-public class TopKShardedSearcher extends VectorSearcher {
+public class TopKShardedSearcher implements Searcher<double []> {
 
 
     private final AnswerQueue queue;
-    private final KeyedVectors[] kv;
+    private final KeyedVectors[] shards;
     private final Executor ex;
+    private final int k;
+    private final Scorer scorer;
 
-    public TopKShardedSearcher(KeyedVectors[] kv, Scorer scorer, int k, Executor ex) {
-        super(scorer, k);
-        this.kv = kv;
+    public TopKShardedSearcher(KeyedVectors[] shards, Scorer scorer, int k, Executor ex) {
+        this.k = k;
+        this.shards = shards;
         this.queue = new AnswerQueue(k);
         this.ex = ex;
+        this.scorer = scorer;
     }
 
-    public void reset() {
-        vec = null;
-        queue.clear();
+    @Override
+    public List<Search.Answer> search(double[] vec) {
+        return Future.traverse(ex, Iterator.of(shards), kv -> asyncSearch(kv, vec)).map(this::topN).get();
     }
 
-    public List<KeyedVectors.Answer> search() {
-        return Future.traverse(ex, Iterator.of(kv), this::asyncSearch).map(this::topN).get();
+    private Future<List<Search.Answer>> asyncSearch(KeyedVectors keyedVectors, double[] vec) {
+        return Future.of(ex, () -> shardSearch(keyedVectors, vec));
     }
 
-    private Future<List<KeyedVectors.Answer>> asyncSearch(KeyedVectors keyedVectors){
-        return Future.of(ex, () -> shardSearch(keyedVectors));
+    private List<Search.Answer> shardSearch(KeyedVectors kv, double[] vec) {
+        Searcher searcher = new TopKSearcher(kv, scorer, k);
+        return searcher.search(vec);
     }
 
-    private List<KeyedVectors.Answer> shardSearch(KeyedVectors keyedVectors){
-        VectorSearcher searcher = keyedVectors.searcher(k);
-        searcher.forVector(vec);
-        return searcher.search();
+    private List<Search.Answer> topN(Seq<List<Search.Answer>> shardAnswers) {
+        return collectAnswers(shardAnswers, queue, k);
     }
 
-    private List<KeyedVectors.Answer> topN(Seq<List<KeyedVectors.Answer>> shardAnswers){
-        for(List<KeyedVectors.Answer> shardAnswer : shardAnswers){
-            for(KeyedVectors.Answer answer : shardAnswer){
+    static List<Search.Answer> collectAnswers(Seq<List<Search.Answer>> shardAnswers, AnswerQueue queue, int k) {
+        for (List<Search.Answer> shardAnswer : shardAnswers) {
+            for (Search.Answer answer : shardAnswer) {
                 queue.insertWithOverflow(answer);
             }
         }
 
-        KeyedVectors.Answer[] top = new KeyedVectors.Answer[k];
+        Search.Answer[] top = new Search.Answer[k];
         for (int i = k - 1; i >= 0; i--) {
             top[i] = queue.pop();
         }

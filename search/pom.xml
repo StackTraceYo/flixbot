@@ -12,35 +12,33 @@
     <artifactId>search</artifactId>
 
 
-<dependencies>
-<!--    compile group: 'io.vavr', name: 'vavr', version: '0.10.3'-->
-<!--    compile 'org.apache.commons:commons-math3:3.6.1'-->
-    <dependency>
-        <groupId>io.vavr</groupId>
-        <artifactId>vavr</artifactId>
-        <version>0.10.3</version>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-math3</artifactId>
-        <version>3.6.1</version>
-    </dependency>
-    <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.3.1</version>
-        <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>5.3.1</version>
-        <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>29.0-jre</version>
-    </dependency>
-</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>io.vavr</groupId>
+            <artifactId>vavr</artifactId>
+            <version>0.10.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.3.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.3.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>29.0-jre</version>
+        </dependency>
+    </dependencies>
 </project>

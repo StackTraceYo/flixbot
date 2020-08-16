@@ -13,6 +13,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.12</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+        <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
             <artifactId>scala-logging_2.12</artifactId>
         </dependency>
@@ -94,7 +99,7 @@
                                 </transformer>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>org.stacktrace.yo.ombi.OmbiBotRunner</mainClass>
+                                    <mainClass>org.stacktrace.yo.flixbot.OmbiBotRunner</mainClass>
                                 </transformer>
                             </transformers>
                             <finalName>ombibot</finalName>

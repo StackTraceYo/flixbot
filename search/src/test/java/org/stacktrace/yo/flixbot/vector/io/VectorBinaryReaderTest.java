@@ -3,8 +3,6 @@ package org.stacktrace.yo.flixbot.vector.io;
 import io.vavr.collection.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.stacktrace.yo.flixbot.vector.io.KeyedVectorIO;
-import org.stacktrace.yo.flixbot.vector.io.KeyedVectorsBuffers;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -14,8 +12,7 @@ class VectorBinaryReaderTest {
 
     @Test
     public void testBinaryReader() throws Exception {
-        KeyedVectorsBuffers kv = KeyedVectorIO.readBinary("/Users/ahmad/Desktop/f_m2v_50_300_10_w2v_format");
-//        KeyedVectorsBuffers kv = KeyedVectorBinaryReader.readBinary(getClass().getResource("/test_word_embeddings").getPath());
+        KeyedVectorsBuffers kv = KeyedVectorIO.readBinary(getClass().getResource("/test_word_embeddings").getPath());
 
         Assertions.assertEquals(15662, kv.keys().length);
         Assertions.assertEquals(100, kv.layerSize());
@@ -29,9 +26,7 @@ class VectorBinaryReaderTest {
 
         Stream.of(0.063834615f, 0.09068402f, -0.44066244f, 2.263171f)
                 .zip(Stream.range(0, 4).map(i -> kv.vectors()[i]).map(ByteBuffer::getFloat))
-                .forEach(pair -> {
-                    Assertions.assertEquals(pair._1, pair._2);
-                });
+                .forEach(pair -> Assertions.assertEquals(pair._1, pair._2));
 
 
     }

@@ -1,4 +1,4 @@
-package org.stacktrace.yo.ombi
+package org.stacktrace.yo.flixbot
 
 import com.softwaremill.sttp.MediaTypes
 import org.json4s.jackson.Serialization
